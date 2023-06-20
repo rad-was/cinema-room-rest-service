@@ -1,15 +1,12 @@
 package rad.cinema.seat;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@AllArgsConstructor
 public class SeatController {
 
     private final SeatService seatService;
 
-    @Autowired
-    public SeatController(SeatService seatService) {
-        this.seatService = seatService;
-    }
 }
