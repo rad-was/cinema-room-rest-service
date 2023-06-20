@@ -33,8 +33,6 @@ class LoadDatabase {
         }
         room.setAvailableSeats(seats);
 
-        return args -> {
-            log.info("Preloading " + roomRepository.save(room));
-        };
+        return args -> log.info("Preloading " + roomRepository.save(room));
     }
 }
