@@ -12,6 +12,10 @@ public class RoomService {
     private final RoomRepository roomRepository;
 
     public Optional<Room> findRoomById(Integer id) {
-        return roomRepository.findById(id);
+        return roomRepository.findRoomById(id);
+    }
+
+    public void updateRoom(Room room) {
+        roomRepository.save(room);
     }
 }

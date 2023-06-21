@@ -1,5 +1,7 @@
 package rad.cinema.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +29,9 @@ class LoadDatabase {
 
         for (int i = 1; i <= rows; ++i) {
             for (int j = 1; j <= columns; ++j) {
-                seats.add(new Seat(i, j, false));
+
+                int price = j <= 4 ? 10 : 8;
+                seats.add(new Seat(i, j, price));
             }
         }
         room.setAvailableSeats(seats);
@@ -35,3 +39,15 @@ class LoadDatabase {
         return args -> log.info("Preloading " + roomRepository.save(room));
     }
 }
+
+@Configuration
+class JacksonConfig {
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        return objectMapper;
+    }
+}
+

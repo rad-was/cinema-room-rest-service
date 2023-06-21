@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Objects;
+
 @Entity
 @Embeddable
 @Table(name = "seats", uniqueConstraints = {
@@ -13,10 +15,10 @@ import lombok.*;
 @RequiredArgsConstructor
 @AllArgsConstructor
 @Data
-@EqualsAndHashCode
 public class Seat {
 
     @Id
+    @JsonIgnore
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -29,8 +31,10 @@ public class Seat {
     private Integer column;
 
     @NonNull
+    private Integer price;
+
     @Column(name = "is_taken", nullable = false)
-    private Boolean isTaken;
+    private Boolean isTaken = false;
 
     @JsonIgnore
     public Long getId() {
@@ -38,7 +42,20 @@ public class Seat {
     }
 
     @JsonIgnore
-    public Boolean getTaken() {
+    public Boolean getIsTaken() {
         return isTaken;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Seat seat = (Seat) o;
+        return Objects.equals(row, seat.row) && Objects.equals(column, seat.column);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(row, column);
     }
 }
