@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import rad.cinema.seat.Seat;
+import rad.cinema.seat.SeatRepository;
+import rad.cinema.ticket.Ticket;
+import rad.cinema.ticket.TicketRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,6 +22,8 @@ import java.util.stream.Collectors;
 public class RoomController {
 
     private final RoomService roomService;
+    private final SeatRepository seatRepository;
+    private final TicketRepository ticketRepository;
 
     @GetMapping(value = "/seats", produces = "application/json")
     public Room getAvailableSeats() {
@@ -61,9 +66,11 @@ public class RoomController {
                 room.setAvailableSeats(seats);
                 roomService.updateRoom(room);
 
-                UUID uuid = UUID.randomUUID();
+                Ticket ticket = new Ticket(UUID.randomUUID(), seatToBook);
+                ticketRepository.save(ticket);
+
                 Map<String, Object> json = new LinkedHashMap<>();
-                json.put("token", uuid);
+                json.put("token", ticket.getToken());
                 json.put("ticket", seatToBook);
 
                 return new ObjectMapper().writeValueAsString(json);
@@ -72,6 +79,29 @@ public class RoomController {
             }
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found!");
+        }
+    }
+
+    @PostMapping(value = "/return", produces = "application/json")
+    public Object returnTicket(@RequestBody Ticket returnTicket) throws JsonProcessingException {
+        Optional<Ticket> ticketOptional = ticketRepository.findById(returnTicket.getToken());
+        if (ticketOptional.isPresent()) {
+            Ticket ticket = ticketOptional.get();
+            ticketRepository.delete(ticket);
+
+            Optional<Room> roomOptional = roomService.findRoomById(1);
+            if (roomOptional.isPresent()) {
+                Room room = roomOptional.get();
+                List<Seat> seats = room.getAvailableSeats();
+                int index = seats.indexOf(ticket.getSeat());
+                seats.get(index).setIsTaken(false);
+                room.setAvailableSeats(seats);
+                roomService.updateRoom(room);
+            }
+
+            return new ObjectMapper().writeValueAsString(Map.of("returned_ticket", ticket.getSeat()));
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong token!");
         }
     }
 }
