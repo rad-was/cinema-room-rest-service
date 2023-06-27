@@ -1,7 +1,5 @@
 package rad.cinema.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -15,10 +13,10 @@ import java.util.List;
 
 @Configuration
 @Slf4j
-class LoadDatabase {
+public class LoadDatabase {
 
     @Bean
-    CommandLineRunner initDatabase(RoomRepository roomRepository) {
+    public CommandLineRunner initDatabase(RoomRepository roomRepository) {
         int rows = 9;
         int columns = 9;
 
@@ -30,24 +28,15 @@ class LoadDatabase {
         for (int i = 1; i <= rows; ++i) {
             for (int j = 1; j <= columns; ++j) {
 
-                int price = j <= 4 ? 10 : 8;
-                seats.add(new Seat(i, j, price));
+                int price = i <= 4 ? 10 : 8;
+                Seat seat = new Seat(i, j);
+                seat.setPrice(price);
+
+                seats.add(seat);
             }
         }
-        room.setAvailableSeats(seats);
+        room.setSeats(seats);
 
         return args -> log.info("Preloading " + roomRepository.save(room));
     }
 }
-
-@Configuration
-class JacksonConfig {
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-        return objectMapper;
-    }
-}
-

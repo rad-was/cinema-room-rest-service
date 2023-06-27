@@ -30,7 +30,6 @@ public class Seat {
     @Column(name = "seat_column", nullable = false)
     private Integer column;
 
-    @NonNull
     private Integer price;
 
     @Column(name = "is_taken", nullable = false)

@@ -12,8 +12,8 @@ import java.util.List;
 @Table(name = "rooms")
 @Data
 @NoArgsConstructor(force = true)
+@RequiredArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
 public class Room {
 
     @Id
@@ -29,9 +29,8 @@ public class Room {
     private Integer totalColumns;
 
     @NonNull
-    @Column(name = "available_seats")
     @OneToMany(cascade = CascadeType.ALL)
-    private List<Seat> availableSeats = new ArrayList<>();
+    private List<Seat> seats = new ArrayList<>();
 
     @JsonIgnore
     public Integer getId() {
