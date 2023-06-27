@@ -3,9 +3,7 @@ package rad.cinema.ticket;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import rad.cinema.seat.Seat;
 import rad.cinema.seat.SeatDto;
 
@@ -33,5 +31,10 @@ public class TicketController {
     public Object returnTicket(@RequestBody Ticket returnTicket) throws JsonProcessingException {
         Seat returnedSeat = ticketService.returnTicket(returnTicket.getToken());
         return new ObjectMapper().writeValueAsString(Map.of("returned_ticket", returnedSeat));
+    }
+
+    @GetMapping(value = "/stats", produces = "application/json")
+    public String getStats(@RequestParam String password) throws JsonProcessingException {
+        return ticketService.getStats(password);
     }
 }

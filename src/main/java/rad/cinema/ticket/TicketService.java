@@ -1,5 +1,7 @@
 package rad.cinema.ticket;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -9,9 +11,7 @@ import rad.cinema.room.RoomService;
 import rad.cinema.seat.Seat;
 import rad.cinema.seat.SeatDto;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -19,6 +19,13 @@ public class TicketService {
 
     private TicketRepository ticketRepository;
     private RoomService roomService;
+
+    public List<Ticket> findAll() {
+        Iterable<Ticket> tickets = ticketRepository.findAll();
+        List<Ticket> ticketList = new ArrayList<>();
+        tickets.forEach(ticketList::add);
+        return ticketList;
+    }
 
     public void saveTicket(UUID token, Seat seat) {
         ticketRepository.save(new Ticket(token, seat));
@@ -69,5 +76,27 @@ public class TicketService {
         }
 
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found!");
+    }
+
+    public String getStats(String password) throws JsonProcessingException {
+        if (!password.equals("super_secret")) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The password is wrong!");
+        }
+
+        List<Ticket> tickets = findAll();
+        int income = tickets.stream().map(t -> t.getSeat().getPrice()).reduce(Integer::sum).orElse(0);
+        int numberOfTickets = tickets.size();
+
+        int availableSeats = 0;
+        Optional<Room> room = roomService.findRoomById(1);
+        if (room.isPresent()) {
+            availableSeats = roomService.findAvailableSeats(room.get()).size();
+        }
+
+        Map<String, Integer> json = new LinkedHashMap<>();
+        json.put("current_income", income);
+        json.put("number_of_available_seats", availableSeats);
+        json.put("number_of_purchased_tickets", numberOfTickets);
+        return new ObjectMapper().writeValueAsString(json);
     }
 }
